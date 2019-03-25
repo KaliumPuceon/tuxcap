@@ -3,30 +3,38 @@
 import sys
 import os
 import time
-import threading
 import collections
 from threading import Thread
 from cv2 import *
 
-num_captures = 200
-frame_period = 0.1
-post_buffer = 100
+pre_buffer = 100 # Frames to capture before trigger
+frame_period = 0.1 # Time between frames (s)
+post_buffer = 100 # Frames to capture after trigger
 
-image_ring = collections.deque("",num_captures);
+capture_dir="/home/kalium/code/tuxcap/captures/"
 
-class cam_thread(Thread):   
+image_ring = collections.deque("",pre_buffer+post_buffer) 
+
+class cam_thread(Thread):  # An enormous pile of state dressed like a thread
     
     should_run = True
     count = 0
     frames_remaining = 0
     save_requested = False
     lock_requested = False
-    #cam = VideoCapture(0)  # Set up camera
-
     
     def run(self):
 
         self.cam = VideoCapture(0)  # Set up camera
+
+        self.cam.set(CAP_PROP_FRAME_WIDTH,1280)
+        self.cam.set(CAP_PROP_FRAME_HEIGHT,720)
+        self.cam.set(CAP_PROP_FPS, 400)
+        self.cam.set(CAP_PROP_AUTOFOCUS,1)
+        self.cam.set(CAP_PROP_AUTO_EXPOSURE,1)
+
+        # Camera Setup Done
+
         self.should_run = True
         self.count = 0
         self.frames_remaining = 0
@@ -77,7 +85,7 @@ class cam_thread(Thread):
 
             img_count = 0
             
-            dirname = "/home/kalium/code/tuxcap/captures/"+str(int(time.time()))
+            dirname = capture_dir+"/"+str(int(time.time()))
             os.mkdir(dirname)
 
             for image in image_ring:
