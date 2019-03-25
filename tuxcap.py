@@ -21,17 +21,12 @@ class cam_thread(Thread):
     frames_remaining = 0
     save_requested = False
     lock_requested = False
+    #cam = VideoCapture(0)  # Set up camera
 
-    def take_pic(self): # Returns a single frame
-
-        cam = VideoCapture(0)  # Set up camera
-        conf, img = cam.read() # Get image
-
-        if conf:    # frame captured without any errors
-            return(img)
-
-
+    
     def run(self):
+
+        self.cam = VideoCapture(0)  # Set up camera
         self.should_run = True
         self.count = 0
         self.frames_remaining = 0
@@ -46,12 +41,20 @@ class cam_thread(Thread):
 
             if self.save_requested: # Munge counters when save requested
 
-                print(self.frames_remaining)
                 self.frames_remaining = self.frames_remaining - 1
 
                 if self.frames_remaining <= 0: # Pass off to save_buffer
                     self.save_requested = False
                     self.save_buffer_now()
+
+
+    def take_pic(self): # Returns a single frame
+
+        conf, img = self.cam.read() # Get image
+
+        if conf: # frame captured without any errors
+            return(img)
+
 
 
     def stop_thread(self): # Flip thread maintenance variable
