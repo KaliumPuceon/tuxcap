@@ -1,13 +1,19 @@
 #! /usr/bin/python3 
 
 import sys
+import os
 import time
 import threading
 import collections
 from threading import Thread
 from cv2 import *
 
-image_ring = collections.deque("",20);
+num_captures = 200
+frame_period = 0.1
+post_buffer = 100
+
+image_ring = collections.deque("",num_captures);
+
 
 class cam_thread(Thread):   
     
@@ -28,48 +34,55 @@ class cam_thread(Thread):
 
 
     def run(self):
-        should_run = True
-        count = 0
-        frames_remaining = 0
-        save_requested = False
-        lock_requested = False
+        self.should_run = True
+        self.count = 0
+        self.frames_remaining = 0
+        self.save_requested = False
+        self.rock_requested = False
 
-        while should_run:
+        while self.should_run:
             
-            if not lock_requested:
+            if not(self.lock_requested):
                 image_ring.append(self.take_pic())
-                time.sleep(0.1) 
+                time.sleep(frame_period) 
 
-            if save_requested:
-                frames_remaining = frames_remaining - 1
-                if frames_remaining <= 0:
+            if self.save_requested:
+                self.frames_remaining = self.frames_remaining - 1
+                if self.frames_remaining <= 0:
+                    self.save_requested = False
                     self.save_buffer_now()
 
 
 
     def stop_thread(self):
         print("Ending capture thread!")
-        should_run = False
+        self.should_run = False
 
     def request_buffer(self):
-        if save_requested == False:
-            frames_remaining = 10
-            save_requested = True
+        if self.save_requested == False:
+            print("start buffer")
+            frames_remaining = post_buffer
+            self.save_requested = True
         else:
             print("Buffering already in progress")
 
     def save_buffer_now(self):
 
-        if lock_requested == False:
-            lock_requested = True
+        if self.lock_requested == False:
+            self.lock_requested = True
 
-            count = 0
+            img_count = 0
+
+            dirname = "/home/kalium/code/tuxcap/captures/"+str(int(time.time()))
+
+            os.mkdir(dirname)
+
             for image in image_ring:
-                os.mkdir("./captures/"+str(int(time.time())))
-                print("saving image "+str(count))
-                imwrite(str(count) + ".jpg",image)
+                print("saving image "+str(img_count))
+                imwrite(dirname + "/" + str(img_count) + ".jpg",image)
+                img_count = img_count + 1
 
-            lock_requested = False
+            self.lock_requested = False
         else:
             print("Buffer presently saving")
 
@@ -89,6 +102,7 @@ def main():
 
         if ans == "show":
             print(image_ring)
+            print(len(image_ring))
         elif ans == "cap":
             cam_loop.request_buffer()
         else:
