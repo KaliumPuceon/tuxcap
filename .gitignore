@@ -159,3 +159,7 @@ tags
 [._]*.un~
 
 # End of https://www.gitignore.io/api/python,vim,venv
+
+# My ignores
+
+*.jpg
