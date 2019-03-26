@@ -91,12 +91,18 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
 
 
             for image in image_ring:
+
                 imwrite(dirname + "/" + str(img_count) + ".jpg",image) # save
                 img_count = img_count + 1
 
             self.lock_requested = False  # release lock on buffer
             print("Buffer saved, lock released")
-            #TODO: use ffmpeg -f image2 -i %d.jpg test.mp4 to videoify images maybe
+
+            # make a call to ffmpeg to video-ify the images
+            os.system("ffmpeg -r 10 -f image2 -i "+dirname+"/\%d.jpg "+dirname+"/capture.mp4 2> /dev/null 1> /dev/null")
+
+            # make a call to delete source images
+            os.system("rm " + dirname +"/*.jpg")
 
         else:
             print("Buffer presently saving")
