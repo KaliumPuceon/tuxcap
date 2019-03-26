@@ -17,11 +17,11 @@ image_ring = collections.deque("",pre_buffer+post_buffer)
 
 class cam_thread(Thread):  # An enormous pile of state dressed like a thread
     
-    should_run = True
-    count = 0
-    frames_remaining = 0
-    save_requested = False
-    lock_requested = False
+    should_run = None
+    count = None
+    frames_remaining = None
+    save_requested = None
+    lock_requested = None
     
     def run(self):
 
@@ -81,6 +81,7 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
 
         if self.lock_requested == False:
 
+            print("Start saving buffer")
             self.lock_requested = True # prevent new images entering buffer
 
             img_count = 0
@@ -88,17 +89,31 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
             dirname = capture_dir+"/"+str(int(time.time()))
             os.mkdir(dirname)
 
+
             for image in image_ring:
-                print("saving image "+str(img_count))
                 imwrite(dirname + "/" + str(img_count) + ".jpg",image) # save
                 img_count = img_count + 1
 
             self.lock_requested = False  # release lock on buffer
+            print("Buffer saved, lock released")
+            #TODO: use ffmpeg -f image2 -i %d.jpg test.mp4 to videoify images maybe
+
         else:
             print("Buffer presently saving")
 
 
 def main():
+
+    print("Creating capture dirs")
+    try:
+        os.makedirs(capture_dir)
+        print("Capture dir created at "+capture_dir)
+    except FileExistsError:
+        print("Capture dir already exists at "+ capture_dir)
+    except PermissionError:
+        print("Permissions insufficient to create capture dir: Try something else")
+        sys.exit()
+
     cam_loop = cam_thread() 
     cam_loop.setDaemon(True)
 
