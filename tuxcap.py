@@ -6,14 +6,18 @@ import time
 import collections
 from threading import Thread
 from cv2 import *
+import tux_config as tc
 
-pre_buffer = 100 # Frames to capture before trigger
-frame_period = 0.1 # Time between frames (s)
-post_buffer = 100 # Frames to capture after trigger
-save_images = False # Keep or remove raw images
-save_video = True # Make video out of frames?
+pre_buffer = tc.pre_buffer
+frame_period = tc.frame_period
+post_buffer = tc.post_buffer
+save_images = tc.save_images
+save_video = tc.save_video
 
-capture_dir="/home/kalium/code/tuxcap/captures/"
+trigger_pin = tc.trigger_pin
+gpio_edge = tc.gpio_edge
+
+capture_dir=tc.capture_dir
 
 image_ring = collections.deque("",pre_buffer+post_buffer) 
 
@@ -29,8 +33,8 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
 
         self.cam = VideoCapture(0)  # Set up camera
 
-        self.cam.set(CAP_PROP_FRAME_WIDTH,1280)
-        self.cam.set(CAP_PROP_FRAME_HEIGHT,720)
+        self.cam.set(CAP_PROP_FRAME_WIDTH,tc.image_width)
+        self.cam.set(CAP_PROP_FRAME_HEIGHT,tc.image_height)
         self.cam.set(CAP_PROP_AUTOFOCUS,1)
         self.cam.set(CAP_PROP_AUTO_EXPOSURE,1)
 
