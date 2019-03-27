@@ -1,4 +1,5 @@
 # Config file help for tuxcap.py
+# Please set ALL of these to your desired values
 # pre_buffer   : number of images to capture before trigger (integer)
 # post_buffer  : number of images to capture after trigger (integer)
 # frame_period : number of seconds between frames (float)

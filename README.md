@@ -2,11 +2,8 @@
 
 TuxCap is a program for buffering a series of photos and capturing the time
 before, during and after some trigger event using a raspberry pi and a USB
-webcam. This particular variant stores the captures as an mp4 video to save
-space, given that it does not have network storage.
-
-At the moment it is in very very development status, configuration being a
-number of variables floating around inside the tuxcap.py file.
+webcam. The captures can be stored as a folder of jpegs or as an mp4 video,
+depending on your size limitations and quality requirements.
 
 The command line interface is basic, and accepts the following commands:
 
@@ -24,8 +21,8 @@ you have a trigger line and the need to capture buffered still images.
 
 TuxCap is written for Python 3. Requirements are updated and can be found in the
 requirements.txt file. It depends on OpenCV for camera handling and Numpy
-because OpenCV depends on it. You can install all dependencies on x86-64 debian
-with:
+because OpenCV depends on it. If you intend to create video captures, `ffmpeg`
+should be installed. You can install all dependencies on x86-64 debian with:
 
 ```
 pip3 install -r requirements.txt
@@ -48,11 +45,18 @@ You may need to add the user running the program to the `video` group, using
 The program will automatically identify the first Video Input device attached to
 the system, on the Pi this will correspond to a webcam that is plugged in.
 
+the file `tux_config.py` serves to set up the system and contains the default
+settings. You can set the number of images taken, the frame rate, whether they
+are saved as video, images or both, where they are stored, and the image
+resolution. The system does not yet support automatic triggering on a GPIO edge,
+but that will be added soon.
+
 Running tuxcap.py will start buffering video on the first available video input
 device found, and present a command line interface. This can be used to test the
 system, by triggering captures. As of writing there is no configuration file or
 interface.
 
-Please check the code if you are using it now, as the capture path is hardcoded
-and will not self-generate.
+# License and Legal
 
+This code licensed under the MIT License, meaning you're free to do almost
+anything with it. Please see the `LICENSE` file for more details.
