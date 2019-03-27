@@ -10,6 +10,8 @@ from cv2 import *
 pre_buffer = 100 # Frames to capture before trigger
 frame_period = 0.1 # Time between frames (s)
 post_buffer = 100 # Frames to capture after trigger
+save_images = False # Keep or remove raw images
+save_video = True # Make video out of frames?
 
 capture_dir="/home/kalium/code/tuxcap/captures/"
 
@@ -29,7 +31,6 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
 
         self.cam.set(CAP_PROP_FRAME_WIDTH,1280)
         self.cam.set(CAP_PROP_FRAME_HEIGHT,720)
-        self.cam.set(CAP_PROP_FPS, 400)
         self.cam.set(CAP_PROP_AUTOFOCUS,1)
         self.cam.set(CAP_PROP_AUTO_EXPOSURE,1)
 
@@ -77,6 +78,8 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
         else:
             print("Buffering already in progress")
 
+
+
     def save_buffer_now(self): # Create locks and mark buffer for saving
 
         if self.lock_requested == False:
@@ -99,10 +102,15 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
             print("Buffer saved, lock released")
 
             # make a call to ffmpeg to video-ify the images
-            os.system("ffmpeg -r 10 -f image2 -i "+dirname+"/\%d.jpg "+dirname+"/capture.mp4 2> /dev/null 1> /dev/null")
+            if save_video:
+                print("Video-ifying images")
+                os.system("ffmpeg -r 10 -f image2 -i "+dirname+"/\%d.jpg "+dirname+"/capture.mp4 2> /dev/null 1> /dev/null")
 
-            # make a call to delete source images
-            os.system("rm " + dirname +"/*.jpg")
+                # make a call to delete source images
+                print("Video done, Removing source images")
+                
+                if not save_images:
+                    os.system("rm " + dirname +"/*.jpg")
 
         else:
             print("Buffer presently saving")
@@ -111,6 +119,7 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
 def main():
 
     print("Creating capture dirs")
+
     try:
         os.makedirs(capture_dir)
         print("Capture dir created at "+capture_dir)
@@ -134,13 +143,19 @@ def main():
 
         if ans == "show":
             print("there are " + str(len(image_ring)) + " items in the ring")
+
         elif ans == "cap":
             cam_loop.request_buffer()
+
         elif ans in ["help","h","?","wat"]:
             print("?, h, help, wat: Show this page")
             print("cap: mark current buffer for capture")
             print("show: show how many items are currently in buffer")
             print("q: quit")
+
+        elif ans in ["q"]:
+            print("That's a wrap")
+
         else:
             print("I don't understand. Enter ? for help")
 
