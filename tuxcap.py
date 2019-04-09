@@ -11,13 +11,12 @@ import tux_config as tc
 pre_buffer = tc.pre_buffer
 frame_period = tc.frame_period
 post_buffer = tc.post_buffer
-save_images = tc.save_images
-save_video = tc.save_video
 
 trigger_pin = tc.trigger_pin
 gpio_edge = tc.gpio_edge
 
 capture_dir=tc.capture_dir
+image_dir=tc.image_dir
 
 image_ring = collections.deque("",pre_buffer+post_buffer) 
 
@@ -46,19 +45,24 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
         self.save_requested = False
         self.lock_requested = False
 
-        while self.should_run: # Allows graceful closeout
-            
-            if not(self.lock_requested): # Don't take pictures when saving
-                image_ring.append(self.take_pic())
-                time.sleep(frame_period) 
+        try:
+            while self.should_run: # Allows graceful closeout
+                
+                if not(self.lock_requested): # Don't take pictures when saving
+                    image_ring.append(self.take_pic())
+                    time.sleep(frame_period) 
 
-            if self.save_requested: # Munge counters when save requested
+                if self.save_requested: # Munge counters when save requested
 
-                self.frames_remaining = self.frames_remaining - 1
+                    self.frames_remaining = self.frames_remaining - 1
 
-                if self.frames_remaining <= 0: # Pass off to save_buffer
-                    self.save_requested = False
-                    self.save_buffer_now()
+                    if self.frames_remaining <= 0: # Pass off to save_buffer
+                        self.save_requested = False
+                        self.save_buffer_now()
+
+        except Exception as e:
+            print(e)
+            os._exit(1)
 
 
     def take_pic(self): # Returns a single frame
@@ -67,7 +71,6 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
 
         if conf: # frame captured without any errors
             return(img)
-
 
 
     def stop_thread(self): # Flip thread maintenance variable
@@ -94,8 +97,10 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
             img_count = 0
             
             dirname = capture_dir+"/"+str(int(time.time()))
+            bkfilename = image_dir+"/"+str(int(time.time()))+".jpg"
             os.mkdir(dirname)
 
+            imwrite(bkfilename, image_ring[pre_buffer])
 
             for image in image_ring:
 
@@ -106,19 +111,16 @@ class cam_thread(Thread):  # An enormous pile of state dressed like a thread
             print("Buffer saved, lock released")
 
             # make a call to ffmpeg to video-ify the images
-            if save_video:
-                print("Video-ifying images")
-                os.system("ffmpeg -r 10 -f image2 -i "+dirname+"/\%d.jpg "+dirname+"/capture.mp4 2> /dev/null 1> /dev/null")
+            print("Video-ifying images")
+            os.system("ffmpeg -r 10 -f image2 -i "+dirname+"/\%d.jpg "+dirname+"/capture.mp4 2> /dev/null 1> /dev/null")
 
-                # make a call to delete source images
-                print("Video done, Removing source images")
-                
-                if not save_images:
-                    os.system("rm " + dirname +"/*.jpg")
+            # make a call to delete source images
+            print("Video done, Removing source images")
+            
+            os.system("rm " + dirname +"/*.jpg")
 
         else:
             print("Buffer presently saving")
-
 
 def main():
 
@@ -131,6 +133,15 @@ def main():
         print("Capture dir already exists at "+ capture_dir)
     except PermissionError:
         print("Permissions insufficient to create capture dir: Try something else")
+        sys.exit()
+
+    try:
+        os.makedirs(image_dir)
+        print("Image dir created at "+image_dir)
+    except FileExistsError:
+        print("Image dir already exists at "+ image_dir)
+    except PermissionError:
+        print("Permissions insufficient to create image dir: Try something else")
         sys.exit()
 
     cam_loop = cam_thread() 
@@ -165,7 +176,7 @@ def main():
 
     cam_loop.stop_thread();
 
-    print("threads have stopped")
+    print("threads have been stopped")
 
     sys.exit()
 

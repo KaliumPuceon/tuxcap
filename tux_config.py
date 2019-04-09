@@ -14,9 +14,8 @@
 pre_buffer   = 100
 post_buffer  = 100
 frame_period = 0.1
-save_video   = True
-save_images  = False
 capture_dir  = "/home/kalium/code/tuxcap/captures/"
+image_dir    = "/home/kalium/code/tuxcap/images/"
 image_width  = 1280
 image_height = 720
 trigger_pin  = 10
