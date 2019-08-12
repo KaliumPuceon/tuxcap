@@ -10,14 +10,18 @@
 # image_height : capture image resolution height (integer)
 # trigger_pin  : which pin is used for the signal (integer)
 # gpio_edge    : Trigger on rising or falling edge (0: rising, 1:falling)
+# debug        : Enable CLI interface (True/False)
 
-pre_buffer   = 100
-post_buffer  = 100
+pre_buffer   = 80
+post_buffer  = 80
 frame_period = 0.1
-capture_dir  = "/home/kalium/code/tuxcap/captures/"
-image_dir    = "/home/kalium/code/tuxcap/images/"
+pit_capture_dir  = "/home/pi/capture/pit/videos/"
+apms_capture_dir  = "/home/pi/capture/apms/videos/"
+pit_image_dir    = "/home/pi/capture/pit/images/"
+apms_image_dir    = "/home/pi/capture/apms/images/"
 image_width  = 1280
 image_height = 720
-trigger_pin  = 10
+trigger_pin  = 18
 gpio_edge    = 1
+debug        = False
 

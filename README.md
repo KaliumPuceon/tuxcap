@@ -34,7 +34,7 @@ the following to install the relevant packages:
 
 ```
 pip3 install opencv-python
-sudo apt install ffmpeg libatlas3-base libcblas3 libjasper1 libqt4-test libgstreamer1.0-0 libqt4-dev-bin
+sudo apt install ffmpeg libatlas3-base libcblas3 libjasper1 libqt4-test libgstreamer1.0-0 libqt4-dev-bin libilmbase12 libopenexr-dev rpi.gpio
 ```
 
 You may need to add the user running the program to the `video` group, using
